@@ -10,10 +10,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// CORS
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
 
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
@@ -24,6 +31,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// tRPC
 app.use(
   "/api/trpc",
   createExpressMiddleware({
@@ -32,12 +40,13 @@ app.use(
   })
 );
 
+// Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Servir frontend em produção
-const clientDistPath = path.resolve(__dirname, "../../client/dist");
+// FRONTEND PRODUÇÃO
+const clientDistPath = path.resolve(process.cwd(), "dist");
 
 app.use(express.static(clientDistPath));
 

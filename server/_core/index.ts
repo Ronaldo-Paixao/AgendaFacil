@@ -1,13 +1,17 @@
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
-// CORS
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -20,7 +24,6 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Mount tRPC routes
 app.use(
   "/api/trpc",
   createExpressMiddleware({
@@ -29,9 +32,17 @@ app.use(
   })
 );
 
-// Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// Servir frontend em produção
+const clientDistPath = path.resolve(__dirname, "../../client/dist");
+
+app.use(express.static(clientDistPath));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;

@@ -1,8 +1,14 @@
-import { publicProcedure, router } from "../_core/trpc";
 import { z } from "zod";
-import { getDb } from "../db";
-import { professionals, services, bookings, availability } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+
+import { publicProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+
+import {
+  professionals,
+  services,
+  bookings,
+} from "../../drizzle/schema";
 
 export const publicRouter = router({
   getProfessional: publicProcedure
@@ -32,18 +38,6 @@ export const publicRouter = router({
         .where(eq(services.professionalId, input.professionalId));
     }),
 
-  getAvailability: publicProcedure
-    .input(z.object({ professionalId: z.number() }))
-    .query(async ({ input }) => {
-      const db = await getDb();
-      if (!db) return [];
-
-      return await db
-        .select()
-        .from(availability)
-        .where(eq(availability.professionalId, input.professionalId));
-    }),
-
   createBooking: publicProcedure
     .input(
       z.object({
@@ -52,8 +46,8 @@ export const publicRouter = router({
         clientName: z.string(),
         clientEmail: z.string().email(),
         clientPhone: z.string(),
-        startTime: z.date(),
-        endTime: z.date(),
+        startTime: z.coerce.date(),
+        endTime: z.coerce.date(),
       })
     )
     .mutation(async ({ input }) => {

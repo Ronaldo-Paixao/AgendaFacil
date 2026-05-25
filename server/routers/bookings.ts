@@ -1,51 +1,53 @@
 import { protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { bookings, professionals } from "../../drizzle/schema";
+import { bookings } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const bookingsRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
 
-    const prof = await db
-      .select()
-      .from(professionals)
-      .where(eq(professionals.userId, ctx.user!.id))
-      .limit(1);
-
-    if (!prof[0]) return [];
-
-    return await db
-      .select()
-      .from(bookings)
-      .where(eq(bookings.professionalId, prof[0].id));
+    return await db.select().from(bookings);
   }),
 
   confirm: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(
+      z.object({
+        id: z.number(),
+        status: z.enum(["pending", "confirmed"]),
+      })
+    )
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
       await db
         .update(bookings)
-        .set({ status: "confirmed" })
+        .set({
+          status: input.status,
+        })
         .where(eq(bookings.id, input.id));
 
       return { success: true };
     }),
 
   cancel: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(
+      z.object({
+        id: z.number(),
+      })
+    )
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
       await db
         .update(bookings)
-        .set({ status: "cancelled" })
+        .set({
+          status: "pending",
+        })
         .where(eq(bookings.id, input.id));
 
       return { success: true };
@@ -55,8 +57,8 @@ export const bookingsRouter = router({
     .input(
       z.object({
         id: z.number(),
-        startTime: z.date(),
-        endTime: z.date(),
+        startTime: z.coerce.date(),
+        endTime: z.coerce.date(),
       })
     )
     .mutation(async ({ input }) => {
@@ -68,7 +70,6 @@ export const bookingsRouter = router({
         .set({
           startTime: input.startTime,
           endTime: input.endTime,
-          status: "pending",
         })
         .where(eq(bookings.id, input.id));
 

@@ -46,7 +46,11 @@ app.get("/health", (req, res) => {
 });
 
 // FRONTEND PRODUÇÃO
-const clientDistPath = path.resolve(process.cwd(), "dist");
+const clientDistPath = path.resolve(
+  process.cwd(),
+  "client",
+  "dist"
+);
 
 app.use(express.static(clientDistPath));
 

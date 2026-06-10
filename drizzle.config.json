@@ -1,12 +1,11 @@
-{
-  "schema": "./drizzle/schema.ts",
-  "out": "./drizzle",
-  "dialect": "mysql",
-  "dbCredentials": {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",
-    "password": "12345",
-    "database": "agendafacil"
-  }
-}
+import "dotenv/config";
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  schema: "./drizzle/schema.ts",
+  out: "./drizzle",
+  dialect: "mysql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+  },
+});

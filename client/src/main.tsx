@@ -13,7 +13,10 @@ function Root() {
   trpc.createClient({
     links: [
       httpBatchLink({
-        url: "/api/trpc",
+        url:
+          window.location.hostname === "localhost"
+            ? "http://localhost:3000/api/trpc"
+            : "/api/trpc",
       }),
     ],
   })

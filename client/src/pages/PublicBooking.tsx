@@ -1,3 +1,5 @@
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
@@ -13,15 +15,33 @@ export default function PublicBooking() {
     { enabled: !!slug }
   );
 
+console.log("slug:", slug);
+console.log("professional:", professional);
+
   const { data: services = [] } = trpc.public.getServices.useQuery(
     { professionalId: professional?.id || 0 },
     { enabled: !!professional }
   );
 
   const { data: availability = [] } = trpc.public.getAvailability.useQuery(
-    { professionalId: professional?.id || 0 },
-    { enabled: !!professional }
+  { professionalId: professional?.id || 0 },
+  {
+    enabled: !!professional,
+    refetchInterval: 5000,
+  }
+);
+
+const { data: existingBookings = [] } =
+  trpc.public.getBookings.useQuery(
+    {
+      professionalId: professional?.id || 0,
+    },
+    {
+      enabled: !!professional,
+      refetchInterval: 5000,
+    }
   );
+
 
   const createBooking = trpc.public.createBooking.useMutation();
 
@@ -32,6 +52,74 @@ export default function PublicBooking() {
     clientPhone: "",
     startTime: "",
   });
+
+const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+const isDayAvailable = (date: Date) => {
+  const dayOfWeek = date.getDay();
+
+  return availability.some(
+    (a) => a.dayOfWeek === dayOfWeek && a.isAvailable
+  );
+};
+
+const getAvailableTimes = () => {
+  if (!selectedDay) return [];
+
+  const dayAvailability = availability.find(
+    (a) => a.dayOfWeek === selectedDay.getDay()
+  );
+
+  if (!dayAvailability) return [];
+
+  const bookedTimes = existingBookings
+    .filter((booking) => {
+      const bookingDate = new Date(booking.startTime);
+
+      return (
+        bookingDate.toDateString() ===
+        selectedDay.toDateString()
+      );
+    })
+    .map((booking) => {
+      const bookingDate = new Date(booking.startTime);
+
+      return bookingDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    });
+
+  const times = [];
+
+  const startHour = parseInt(
+    dayAvailability.startTime.split(":")[0]
+  );
+
+  const endHour = parseInt(
+    dayAvailability.endTime.split(":")[0]
+  );
+
+  const now = new Date();
+
+for (let hour = startHour; hour < endHour; hour++) {
+  const time = `${hour.toString().padStart(2, "0")}:00`;
+
+  const slotDate = new Date(selectedDay);
+
+  slotDate.setHours(hour);
+  slotDate.setMinutes(0);
+  slotDate.setSeconds(0);
+
+  const isPast = slotDate < now;
+
+  if (!bookedTimes.includes(time) && !isPast) {
+    times.push(time);
+  }
+}
+return times;
+};
 
   const selectedDate = formData.startTime
     ? new Date(formData.startTime)
@@ -199,25 +287,70 @@ export default function PublicBooking() {
             />
           </div>
 
-          <div className="mb-3">
-            <label className="block text-amber-900 font-semibold mb-2">
-              Data e Hora
-            </label>
+          <div className="mb-5">
+  <label className="block text-amber-900 font-semibold mb-2">
+    Escolha uma Data
+  </label>
 
-            <input
-              type="datetime-local"
-              value={formData.startTime}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  startTime: e.target.value,
-                })
-              }
-              className="w-full border border-amber-200 rounded-lg px-4 py-3"
-              required
-            />
-          </div>
+  <Calendar
+    onChange={(value: any) => {
+      const date = value as Date;
 
+      setSelectedDay(date);
+
+      setFormData({
+        ...formData,
+        startTime: date.toISOString(),
+      });
+    }}
+    value={selectedDay || new Date()}
+    tileDisabled={({ date }) => !isDayAvailable(date)}
+minDate={new Date()}
+  />
+</div>
+
+{selectedDay && (
+  <div className="mt-6">
+    <label className="block text-amber-900 font-semibold mb-3">
+      Horários Disponíveis
+    </label>
+
+    <div className="grid grid-cols-3 gap-2">
+      {getAvailableTimes().map((time) => (
+        <button
+          key={time}
+          type="button"
+          onClick={() => {
+            const [hours, minutes] = time.split(":");
+
+            const newDate = new Date(selectedDay);
+
+            newDate.setHours(Number(hours));
+            newDate.setMinutes(Number(minutes));
+
+            setFormData({
+              ...formData,
+              startTime: newDate.toISOString(),
+            });
+          }}
+          className="bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg py-2 font-medium"
+        >
+          {time}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+{formData.startTime && (
+  <p className="mt-3 text-green-600 font-medium">
+    Horário selecionado:{" "}
+    {new Date(formData.startTime).toLocaleString("pt-BR", {
+  dateStyle: "short",
+  timeStyle: "short",
+})}
+  </p>
+)}
           {selectedDate && selectedAvailability && (
             <p className="text-sm text-amber-700 mb-5">
               Horário disponível nesse dia: {selectedAvailability.startTime} até{" "}

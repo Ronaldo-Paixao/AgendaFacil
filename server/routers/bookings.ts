@@ -54,25 +54,42 @@ export const bookingsRouter = router({
     }),
 
   reschedule: protectedProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        startTime: z.coerce.date(),
-        endTime: z.coerce.date(),
+  .input(
+    z.object({
+      id: z.number(),
+      startTime: z.coerce.date(),
+      endTime: z.coerce.date(),
+    })
+  )
+  .mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    await db
+      .update(bookings)
+      .set({
+        startTime: input.startTime,
+        endTime: input.endTime,
       })
-    )
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database not available");
+      .where(eq(bookings.id, input.id));
 
-      await db
-        .update(bookings)
-        .set({
-          startTime: input.startTime,
-          endTime: input.endTime,
-        })
-        .where(eq(bookings.id, input.id));
+    return { success: true };
+  }),
 
-      return { success: true };
-    }),
+delete: protectedProcedure
+  .input(
+    z.object({
+      id: z.number(),
+    })
+  )
+  .mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    await db
+      .delete(bookings)
+      .where(eq(bookings.id, input.id));
+
+    return { success: true };
+  }),
 });

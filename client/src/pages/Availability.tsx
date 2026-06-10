@@ -1,11 +1,21 @@
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 export default function Availability() {
-  const { data: availability = [] } = trpc.availability.list.useQuery();
-  const upsert = trpc.availability.upsert.useMutation();
+const [, navigate] = useLocation();
+  const utils = trpc.useUtils();
+
+const { data: availability = [] } =
+  trpc.availability.list.useQuery();
+
+const upsert = trpc.availability.upsert.useMutation({
+  onSuccess: () => {
+    utils.availability.list.invalidate();
+  },
+});
 
   const [formData, setFormData] = useState({
     dayOfWeek: 0,
@@ -15,13 +25,23 @@ export default function Availability() {
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await upsert.mutateAsync(formData);
-  };
+  e.preventDefault();
+
+  await upsert.mutateAsync(formData);
+
+  alert("Disponibilidade salva com sucesso!");
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-8">
       <div className="max-w-4xl mx-auto">
+<button
+  type="button"
+  onClick={() => navigate("/")}
+  className="mb-4 px-4 py-2 bg-white border border-amber-200 rounded-lg text-amber-800 hover:bg-amber-50 transition"
+>
+  ← Voltar ao Início
+</button>
         <h1 className="text-4xl font-bold text-amber-900 mb-8">Disponibilidade</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg p-8 shadow-sm border border-amber-100 mb-8">

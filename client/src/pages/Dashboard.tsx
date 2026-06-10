@@ -1,15 +1,29 @@
 import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
+const [, navigate] = useLocation();
   const utils = trpc.useUtils();
 
-  const { data: bookings = [] } = trpc.bookings.list.useQuery();
+  const { data: bookings = [] } =
+  trpc.bookings.list.useQuery(
+    undefined,
+    {
+      refetchInterval: 5000,
+    }
+  );
 
   const updateBookingStatus = trpc.bookings.confirm.useMutation({
     onSuccess: () => {
       utils.bookings.list.invalidate();
     },
   });
+
+const deleteBooking = trpc.bookings.delete.useMutation({
+  onSuccess: () => {
+    utils.bookings.list.invalidate();
+  },
+});
 
   const today = new Date();
 
@@ -80,11 +94,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-amber-900 mb-8">
-          Dashboard
-        </h1>
+  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-8">
+    <div className="max-w-6xl mx-auto">
+
+      <button
+        type="button"
+        onClick={() => navigate("/")}
+        className="mb-4 px-4 py-2 bg-white border border-amber-200 rounded-lg text-amber-800 hover:bg-amber-50 transition"
+      >
+        ← Voltar ao Início
+      </button>
+
+      <h1 className="text-4xl font-bold text-amber-900 mb-8">
+        Dashboard
+      </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-amber-100">
@@ -187,6 +210,23 @@ export default function Dashboard() {
                           Desfazer
                         </button>
                       )}
+
+<button
+  onClick={() => {
+    const confirmed = window.confirm(
+      "Deseja realmente excluir este agendamento?"
+    );
+
+    if (!confirmed) return;
+
+    deleteBooking.mutate({
+      id: booking.id,
+    });
+  }}
+  className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition"
+>
+  Excluir
+</button>
                     </div>
                   </div>
                 </div>

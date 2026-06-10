@@ -45,14 +45,15 @@ export const professionalsRouter = router({
     }),
 
   updateProfile: protectedProcedure
-    .input(
-      z.object({
-        businessName: z.string().optional(),
-        description: z.string().optional(),
-        phone: z.string().optional(),
-        whatsapp: z.string().optional(),
-      })
-    )
+  .input(
+    z.object({
+      slug: z.string().optional(),
+      businessName: z.string().optional(),
+      description: z.string().optional(),
+      phone: z.string().optional(),
+      whatsapp: z.string().optional(),
+    })
+  )
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");

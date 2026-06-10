@@ -8,6 +8,7 @@ import {
   professionals,
   services,
   bookings,
+  availability,
 } from "../../drizzle/schema";
 
 export const publicRouter = router({
@@ -27,30 +28,58 @@ export const publicRouter = router({
     }),
 
   getServices: publicProcedure
-    .input(z.object({ professionalId: z.number() }))
-    .query(async ({ input }) => {
-      const db = await getDb();
-      if (!db) return [];
+  .input(z.object({ professionalId: z.number() }))
+  .query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
 
-      return await db
-        .select()
-        .from(services)
-        .where(eq(services.professionalId, input.professionalId));
-    }),
+    return await db
+      .select()
+      .from(services)
+      .where(eq(services.professionalId, input.professionalId));
+  }),
 
-  createBooking: publicProcedure
-    .input(
-      z.object({
-        professionalId: z.number(),
-        serviceId: z.number(),
-        clientName: z.string(),
-        clientEmail: z.string().email(),
-        clientPhone: z.string(),
-        startTime: z.coerce.date(),
-        endTime: z.coerce.date(),
-      })
-    )
-    .mutation(async ({ input }) => {
+getAvailability: publicProcedure
+  .input(z.object({ professionalId: z.number() }))
+  .query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+
+    return await db
+      .select()
+      .from(availability)
+      .where(eq(availability.professionalId, input.professionalId));
+  }),
+
+getBookings: publicProcedure
+  .input(
+    z.object({
+      professionalId: z.number(),
+    })
+  )
+  .query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+
+    return await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.professionalId, input.professionalId));
+  }),
+
+createBooking: publicProcedure
+  .input(
+    z.object({
+      professionalId: z.number(),
+      serviceId: z.number(),
+      clientName: z.string(),
+      clientEmail: z.string().email(),
+      clientPhone: z.string(),
+      startTime: z.coerce.date(),
+      endTime: z.coerce.date(),
+    })
+  )    
+.mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

@@ -93,7 +93,9 @@ useEffect(() => {
               value={formData.slug}
               onChange={e => setFormData({ ...formData, slug: e.target.value })}
               className="w-full px-4 py-2 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"
-              disabled={!editingSlug}
+              disabled={profile ? !editingSlug : false}
+required
+  minLength={3}
             />
           </div>
 

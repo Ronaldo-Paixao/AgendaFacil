@@ -1,6 +1,8 @@
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function Profile() {
 const [, navigate] = useLocation();
@@ -70,6 +72,8 @@ useEffect(() => {
   ← Voltar ao Início
 </button>
 
+<Breadcrumb current="Meu Perfil" />
+
 <h1 className="text-4xl font-bold text-amber-900 mb-8">
   Meu Perfil
 </h1>
@@ -123,19 +127,19 @@ required
       Link Público de Agendamento
     </label>
 
-    <div className="flex gap-2">
+    <div className="flex flex-col md:flex-row gap-2">
       <input
-        type="text"
-        value={`http://localhost:5173/book/${formData.slug}`}
-        readOnly
-        className="flex-1 px-4 py-2 border border-amber-200 rounded-lg bg-white"
-      />
+  type="text"
+  value={`${window.location.origin}/book/${formData.slug}`}
+  readOnly
+  className="w-full px-4 py-2 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"
+/>
 
       <button
         type="button"
         onClick={() => {
           navigator.clipboard.writeText(
-            `http://localhost:5173/book/${formData.slug}`
+            `${window.location.origin}/book/${formData.slug}`
           );
 
           alert("Link copiado!");
@@ -150,7 +154,7 @@ required
       type="button"
       onClick={() =>
         window.open(
-          `http://localhost:5173/book/${formData.slug}`,
+          `${window.location.origin}/book/${formData.slug}`,
           "_blank"
         )
       }
@@ -171,7 +175,7 @@ required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-amber-900 font-semibold mb-2">Telefone</label>
               <input
@@ -184,11 +188,11 @@ required
             <div>
               <label className="block text-amber-900 font-semibold mb-2">WhatsApp</label>
               <input
-                type="tel"
-                value={formData.whatsapp}
-                onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
-                className="w-full px-4 py-2 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"
-              />
+  type="tel"
+  value={formData.whatsapp}
+  onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
+  className="w-full px-4 py-2 border border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"
+/>
             </div>
           </div>
 
@@ -200,6 +204,7 @@ required
           </button>
         </form>
       </div>
+<Footer />
     </div>
   );
 }

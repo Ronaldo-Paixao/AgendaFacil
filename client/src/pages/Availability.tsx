@@ -1,6 +1,8 @@
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
@@ -42,6 +44,9 @@ const upsert = trpc.availability.upsert.useMutation({
 >
   ← Voltar ao Início
 </button>
+
+<Breadcrumb current="Disponibilidade" />
+
         <h1 className="text-4xl font-bold text-amber-900 mb-8">Disponibilidade</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg p-8 shadow-sm border border-amber-100 mb-8">
@@ -119,6 +124,9 @@ const upsert = trpc.availability.upsert.useMutation({
           })}
         </div>
       </div>
+
+      <Footer />
+
     </div>
   );
 }

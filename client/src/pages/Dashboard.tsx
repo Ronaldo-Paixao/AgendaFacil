@@ -1,5 +1,8 @@
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/Breadcrumb";
+
 
 export default function Dashboard() {
 const [, navigate] = useLocation();
@@ -34,6 +37,13 @@ const deleteBooking = trpc.bookings.delete.useMutation({
 
   const pendingBookings = bookings.filter((b) => b.status === "pending");
   const confirmedBookings = bookings.filter((b) => b.status === "confirmed");
+
+const totalBookings = bookings.length;
+
+const confirmationRate =
+  totalBookings > 0
+    ? Math.round((confirmedBookings.length / totalBookings) * 100)
+    : 0;
 
   const todayBookingsList = bookings
     .filter((b) => {
@@ -105,11 +115,13 @@ const deleteBooking = trpc.bookings.delete.useMutation({
         ← Voltar ao Início
       </button>
 
+<Breadcrumb current="Dashboard" />
+
       <h1 className="text-4xl font-bold text-amber-900 mb-8">
         Dashboard
       </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white rounded-lg p-6 shadow-sm border border-amber-100">
             <h3 className="text-amber-600 text-sm font-semibold mb-2">
               Agendamentos Hoje
@@ -140,6 +152,26 @@ const deleteBooking = trpc.bookings.delete.useMutation({
             </p>
           </div>
         </div>
+
+<div className="bg-white rounded-lg p-6 shadow-sm border border-blue-100">
+  <h3 className="text-blue-600 text-sm font-semibold mb-2">
+    Total de Agendamentos
+  </h3>
+
+  <p className="text-3xl font-bold text-blue-900">
+    {totalBookings}
+  </p>
+</div>
+
+<div className="bg-white rounded-lg p-6 shadow-sm border border-purple-100">
+  <h3 className="text-purple-600 text-sm font-semibold mb-2">
+    Taxa de Confirmação
+  </h3>
+
+  <p className="text-3xl font-bold text-purple-900">
+    {confirmationRate}%
+  </p>
+</div>
 
         <div className="bg-white rounded-lg p-6 shadow-sm border border-amber-100">
           <h2 className="text-2xl font-bold text-amber-900 mb-4">
@@ -230,11 +262,14 @@ const deleteBooking = trpc.bookings.delete.useMutation({
                     </div>
                   </div>
                 </div>
-              ))}
+               ))}
             </div>
           )}
         </div>
       </div>
+
+      <Footer />
+
     </div>
   );
 }

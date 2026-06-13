@@ -1,12 +1,23 @@
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function Services() {
 const [, navigate] = useLocation();
+const utils = trpc.useUtils();
   const { data: services = [] } = trpc.services.list.useQuery();
-  const createService = trpc.services.create.useMutation();
-  const deleteService = trpc.services.delete.useMutation();
+  const createService = trpc.services.create.useMutation({
+  onSuccess: () => {
+    utils.services.list.invalidate();
+  },
+});
+  const deleteService = trpc.services.delete.useMutation({
+  onSuccess: () => {
+    utils.services.list.invalidate();
+  },
+});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,6 +43,8 @@ const [, navigate] = useLocation();
   >
     ← Voltar ao Início
   </button>
+
+<Breadcrumb current="Serviços" />
 
   <h1 className="text-4xl font-bold text-amber-900 mb-8">
     Meus Serviços
@@ -92,8 +105,15 @@ const [, navigate] = useLocation();
           </button>
         </form>
 
-        <div className="space-y-4">
-          {services.map(service => (
+        {services.length === 0 ? (
+  <div className="bg-white rounded-lg p-8 text-center border border-amber-100">
+    <p className="text-amber-600">
+      Nenhum serviço cadastrado.
+    </p>
+  </div>
+) : (
+  <div className="space-y-4">
+    {services.map(service => (
             <div key={service.id} className="bg-white rounded-lg p-6 shadow-sm border border-amber-100">
               <div className="flex justify-between items-start">
                 <div>
@@ -110,11 +130,15 @@ const [, navigate] = useLocation();
                 >
                   Deletar
                 </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      <Footer />
+
     </div>
   );
 }

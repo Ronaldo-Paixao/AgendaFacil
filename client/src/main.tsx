@@ -10,17 +10,17 @@ function Root() {
   const [queryClient] = useState(() => new QueryClient());
 
   const [trpcClient] = useState(() =>
-  trpc.createClient({
-    links: [
-      httpBatchLink({
-        url:
-          window.location.hostname === "localhost"
-            ? "http://localhost:3000/api/trpc"
-            : "/api/trpc",
-      }),
-    ],
-  })
-);
+    trpc.createClient({
+      links: [
+        httpBatchLink({
+          url:
+            window.location.hostname === "localhost"
+              ? "http://localhost:3000/api/trpc"
+              : "/api/trpc",
+        }),
+      ],
+    })
+  );
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -29,7 +29,7 @@ function Root() {
       </QueryClientProvider>
     </trpc.Provider>
   );
-}
+} // <- ESTAVA FALTANDO ISSO
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
